@@ -1,0 +1,21 @@
+{
+  "name": "botapp",
+  "version": "1.0.0",
+  "description": "a slack message bot",
+  "main": "app.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "Joshua onwuzu",
+  "license": "ISC",
+  "dependencies": {
+    "@slack/interactive-messages": "^2.0.2",
+    "@slack/web-api": "^6.6.0",
+    "dotenv": "^14.3.2",
+    "express": "^4.17.2",
+    "mongoose": "^6.1.8"
+  },
+  "devDependencies": {
+    "jest": "^27.4.7"
+  }
+}
