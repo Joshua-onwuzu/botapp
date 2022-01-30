@@ -1,50 +1,27 @@
-exports.getFeelingDatabase =  class Database{
 
-    findOne (user, callBack){
-        if(user.username){
-            const data = {
-                message : "doing well"
-            }
-            const err = ""
-            return callBack(err, data)
-        }
-    }
+const mongoose = require('mongoose');
+const {MongoMemoryServer} = require('mongodb-memory-server');
+
+let mongod;
+
+exports.connect = async ()=>{
+    mongod = await MongoMemoryServer.create();
+    const uri = mongod.getUri();
+
+    mongoose.connect(uri,{useNewUrlParser : true, useUnifiedTopology:true})
 }
 
-exports.hobbiesDatabase =  class Database{
-
-    findOne (user, callBack){
-        if(user.username){
-            const data= {
-                hobbies : ['Basketball', 'swimming']
-            }
-
-            const err = ""
-            return callBack(err,data)
-        }
-    }
+exports.closeDataBase = async ()=>{
+    await mongoose.connection.dropDatabase();
+    await mongoose.connection.close();
+    mongod.stop()
 }
 
-exports.failToGetHobbies = class Database{
+exports.clearDatabase = async ()=>{
+    const collections = mongoose.connection.collections;
 
-    findOne (user, callBack){
-        if(user.username){
-
-            const err = ""
-
-            return callBack(err)
-        }
-    }
-}
-
-exports.failToGetFeeling = class Database{
-
-    findOne (user, callBack){
-        if(user.username){
-
-            const err = ""
-
-            return callBack(err)
-        }
+    for(const key in collections){
+        const collection = collections[key];
+        await collection.deleteMany();
     }
 }

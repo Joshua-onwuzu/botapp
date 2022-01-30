@@ -21,7 +21,7 @@ exports.getUserResponse = (req,res)=>{
                         message : data.message
                     })
                 }else{
-                    res.status(404).send({
+                    res.send({
                         status : "fail",
                         message : "cannot find response of user specified"
                     })
@@ -46,11 +46,11 @@ exports.getUserHobbies = (req, res)=>{
             User.findOne({username : req.params.user},(err,data)=>{
         
                 if(data){
-                    res.status(200).send({
+                    res.send({
                         hobbies : data.hobbies
                     })
                 }else{
-                    res.status(404).send({
+                    res.send({
                         status : "fail",
                         message : "cannot get response of user specified"
                     })

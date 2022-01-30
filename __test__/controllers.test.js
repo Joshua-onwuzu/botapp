@@ -1,6 +1,18 @@
 const control = require('../app/controller/routeController/routeController');
 const block = require('../app/block/block');
-const {getFeelingDatabase, hobbiesDatabase, failToGetHobbies} = require('./database');
+const database = require('../app/database/db');
+const db = require('./database');
+
+
+const User = database.user;
+
+beforeAll(async () => {
+    await db.connect();
+});
+
+afterEach(async () => await db.clearDatabase());
+
+afterAll(async () => await db.closeDataBase());
 
 describe('test controllers', ()=>{
     test('respond to /message', ()=>{
@@ -34,7 +46,7 @@ describe('test controllers', ()=>{
         });
     });
 
-    test('it should not respond to /hobbies with no params', ()=>{
+    test('it should not respond to /hobbies with no params', (done)=>{
         let resp;
 
         const req = {}
@@ -49,10 +61,11 @@ describe('test controllers', ()=>{
         expect(resp).toEqual({
             status : "fail",
             message : "specify username on request params"
-        });        
+        }); 
+        done()       
     });
 
-    test('it should send user feeling', ()=>{
+    test('it should send user feeling', async (done)=>{
         let response;
 
         const req = {
@@ -64,139 +77,106 @@ describe('test controllers', ()=>{
         const res = {
             send : (data)=>{
                 response = data
+
+                expect(response).toEqual({
+                    message : 'doing well'
+                });
+                done()
             }
         }
 
-        const callBackFunction = (err, data)=>{
-            if (data){
-                res.send(data)
-            }
-        }
+        const username = 'joshuaonwuzu';
+        const userRadioOption = 'doing well';
+        const hobbies = ['football','basketball', 'music']
 
-        const dataObject = {
-            username : req.params.user
-        }
+        const recordUser = new User({
+            username : username,
+            message : userRadioOption,
+            hobbies : hobbies
+        });
+    
+        await recordUser.save();
+        
 
-        const User = new getFeelingDatabase()
-
-        User.findOne(dataObject,callBackFunction)
-
-        expect(response).toEqual({
-            message : 'doing well'
-        })
+        control.getUserResponse(req, res)
 
 
 
     });
 
-    test('it should response with user hobbies', ()=>{
-        let response;
+    test('it should response with user hobbies', async(done)=>{
+        const username = 'joshuaonwuzu';
+        const userRadioOption = 'doing well';
+        const hobbies = ['football','basketball', 'music']
+
+        const recordUser = new User({
+            username : username,
+            message : userRadioOption,
+            hobbies : hobbies
+        });
+    
+        await recordUser.save();
 
         const req = {
             params : {
-                user : "joshuaonwuzu"
+                user : 'joshuaonwuzu'
             }
         }
 
+        const res = {
+            send : (data)=>{
+                const response = data;
+                
+                expect(response).toEqual({
+                    hobbies : ['football','basketball', 'music']
+                });
+                done()
+            }
+        }
+
+        control.getUserHobbies(req, res);
+    });
+
+    test('fail to get user hobbies response', async( done)=>{
+        const req = {
+            params : {
+                user : "kelvin"
+            }
+        }
+        let response ;
         const res = {
             send : (data)=>{
                 response = data
+                expect(response).toEqual({
+                    status : "fail",
+                    message : "cannot get response of user specified"
+                });
+                done()
+
             }
         }
-
-        const callBackFunction = (err, data)=>{
-            if (data){
-                res.send(data)
-            }
-        }
-
-        const dataObject = {
-            username : req.params.user
-        }
-
-        const User = new hobbiesDatabase()
-
-        User.findOne(dataObject,callBackFunction)
-
-        expect(response).toEqual({
-            hobbies : ['Basketball', 'swimming']
-        })
+        control.getUserHobbies(req, res)
     });
 
-    test('fail to get user hobbies response', ()=>{
-        let resp;
-
+    test('fail to get user feeling response', (done)=>{
         const req = {
             params : {
                 user : "kelvin"
             }
         }
-
+        let response ;
         const res = {
             send : (data)=>{
-                resp = data
-            }
-        }
-
-        const callBackFunction = (err, data)=>{
-            if (!data){
-                res.send({
+                response = data
+                expect(response).toEqual({
                     status : "fail",
-                    message : "cannot get response of user specified"
-                })
+                    message : "cannot find response of user specified"
+                });
+                done()
+
             }
         }
-
-        const dataObject = {
-            username : req.params.user
-        }
-
-        const User = new failToGetHobbies()
-
-        User.findOne(dataObject,callBackFunction)
-
-        expect(resp).toEqual({
-            status : "fail",
-            message : "cannot get response of user specified"
-        })
-    });
-
-    test('fail to get user feeling response', ()=>{
-        let resp;
-
-        const req = {
-            params : {
-                user : "kelvin"
-            }
-        }
-
-        const res = {
-            send : (data)=>{
-                resp = data
-            }
-        }
-
-        const callBackFunction = (err, data)=>{
-            if (!data){
-                res.send({
-                    status : "fail",
-                    message : "cannot get response of user specified"
-                })
-            }
-        }
-
-        const dataObject = {
-            username : req.params.user
-        }
-
-        const User = new failToGetHobbies()
-
-        User.findOne(dataObject,callBackFunction)
-
-        expect(resp).toEqual({
-            status : "fail",
-            message : "cannot get response of user specified"
-        })        
+        control.getUserResponse(req, res)      
     })
 
 })

@@ -1,10 +1,6 @@
 const block = require('../../block/block');
 
-const client = require('../webClient/client');
-
-const db = require('../../database/db');
-
-const User = db.user;
+const {createRecord} = require('./createUserRecord')
 
 let channel;
 let userRadioOption;
@@ -35,19 +31,5 @@ exports.favoriteHobbySubmit = async (payload) => {
     userSelectedHobbies.forEach(hobby =>{
         hobbies.push(hobby.value)
     })
-    console.log(userRadioOption, username, hobbies)
-
-    const recordUser = new User({
-        username : username,
-        message : userRadioOption,
-        hobbies : hobbies
-    });
-    recordUser.save(async (err,data)=>{
-        if(!err){
-            await client.chat.postMessage({channel: channel, text : "Thank you"})
-        }
-    })
-    return {
-      response_action: "clear"
-    }
+    createRecord(username, userRadioOption, hobbies, channel);
   }
